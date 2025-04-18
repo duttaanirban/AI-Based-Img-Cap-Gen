@@ -14,6 +14,11 @@ function App() {
     }
   };
 
+  const handleDeleteImage = () => {
+    setImage(null);
+    setCaption(""); // Optionally clear the caption as well
+  };
+
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
@@ -48,8 +53,8 @@ function App() {
 
   return (
     <div>
-      <div className="min-h-screen bg-gradient-to-br from-blue-100 to-white flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-white text-gray-800 shadow-2xl rounded-3xl p-8 transition-all">
+      <div className="min-h-screen flex items-center justify-center p-4"  style={{ backgroundImage: `url('https://static.vecteezy.com/system/resources/previews/007/188/992/non_2x/abstract-minimal-modern-geometric-shape-background-free-vector.jpg')` }}>
+        <div className="w-full max-w-md bg-white bg-opacity-60 backdrop-blur-md text-gray-800 shadow-2xl rounded-3xl p-8 transition-all">
           <h1 className="text-3xl font-bold text-center text-blue-600 mb-6">
             🧠 Caption Generator
           </h1>
@@ -70,7 +75,8 @@ function App() {
               Drag & drop an image here or
             </p>
 
-            <div className="flex justify-center mt-4">
+            <div className="flex justify-center mt-4 space-x-4">
+              {/* Choose File Button */}
               <label className="cursor-pointer inline-block px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition">
                 Choose File
                 <input
@@ -80,6 +86,16 @@ function App() {
                   className="hidden"
                 />
               </label>
+
+              {/* Delete Button */}
+              {image && (
+                <button
+                  onClick={handleDeleteImage}
+                  className="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition"
+                >
+                  Delete
+                </button>
+              )}
             </div>
           </div>
 
