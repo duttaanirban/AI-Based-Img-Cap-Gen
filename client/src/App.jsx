@@ -4,10 +4,24 @@ function App() {
   const [image, setImage] = useState(null);
   const [caption, setCaption] = useState("");
   const [loading, setLoading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
 
   const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
-    setCaption("");
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+      setCaption("");
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      setImage(file);
+      setCaption("");
+    }
   };
 
   const handleSubmit = async () => {
@@ -24,13 +38,8 @@ function App() {
       });
 
       const data = await res.json();
-      if (data.caption) {
-        setCaption(data.caption);
-      } else {
-        setCaption("Error generating caption.");
-      }
-    } catch (err) {
-      console.error(err);
+      setCaption(data.caption || "Error generating caption.");
+    } catch {
       setCaption("Server error.");
     } finally {
       setLoading(false);
@@ -38,52 +47,81 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 flex flex-col items-center justify-center p-6">
-      <div className="bg-white shadow-xl rounded-2xl w-full max-w-md p-8">
-        <h1 className="text-2xl font-bold text-blue-600 text-center mb-6">
-          🧠 Image Caption Generator
-        </h1>
+    <div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-100 to-white flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-white text-gray-800 shadow-2xl rounded-3xl p-8 transition-all">
+          <h1 className="text-3xl font-bold text-center text-blue-600 mb-6">
+            🧠 Caption Generator
+          </h1>
 
-        <div className="mb-4">
-          <label className="block mb-2 font-medium text-gray-700 text-center">
-            Upload Image
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="border border-gray-300 p-3 text-sm rounded-lg cursor-pointer focus:outline-none bg-gray-50"
-          />
+          {/* Drag and Drop */}
+          <div
+            className={`mb-4 p-6 border-2 border-dashed rounded-xl transition ${
+              dragOver ? "border-blue-500 bg-blue-50" : "border-gray-300"
+            }`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={handleDrop}
+          >
+            <p className="text-center text-sm opacity-80">
+              Drag & drop an image here or
+            </p>
+
+            <div className="flex justify-center mt-4">
+              <label className="cursor-pointer inline-block px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition">
+                Choose File
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Image Preview */}
+          {image && (
+            <div className="mb-4 flex justify-center">
+              <img
+                src={URL.createObjectURL(image)}
+                alt="Preview"
+                className="max-h-60 rounded-lg shadow-md"
+              />
+            </div>
+          )}
+
+          {/* Generate Button */}
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className={`w-full py-3 px-4 rounded-xl font-semibold text-white transition duration-200 ${
+              loading
+                ? "bg-blue-300 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
+          >
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+                Generating...
+              </div>
+            ) : (
+              "Generate Caption"
+            )}
+          </button>
+
+          {/* Caption Result */}
+          {caption && (
+            <div className="mt-6 p-4 bg-gray-100 rounded-xl border">
+              <h3 className="font-semibold text-lg">📝 Caption:</h3>
+              <p className="mt-1 italic text-gray-700">{caption}</p>
+            </div>
+          )}
         </div>
-
-        {image && (
-          <div className="mb-4 flex justify-center">
-            <img
-              src={URL.createObjectURL(image)}
-              alt="Preview"
-              className="max-h-60 rounded-lg shadow"
-            />
-          </div>
-        )}
-
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className={`w-full py-2 px-4 rounded-lg transition-all font-semibold ${
-            loading
-              ? "bg-blue-300 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700 text-white"
-          }`}
-        >
-          {loading ? "Generating..." : "Generate Caption"}
-        </button>
-
-        {caption && (
-          <div className="mt-6 p-4 bg-gray-100 rounded-lg border text-gray-800">
-            <strong>Caption:</strong>
-            <p className="mt-1 italic">{caption}</p>
-          </div>
-        )}
       </div>
     </div>
   );
